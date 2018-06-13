@@ -21,7 +21,8 @@ class DatabaseBackend(BaseDictBackend):
             'children': self.current_task_children(request),
         })
 
-        task_name = getattr(request, 'task', None) if request else None
+        task = getattr(request, 'task', None) if request else None
+        task_name = getattr(task, 'name', None)
         task_args = getattr(request, 'args', None) if request else None
         task_kwargs = getattr(request, 'kwargs', None) if request else None
 
