@@ -50,6 +50,21 @@ class DatabaseBackend(BaseDictBackend):
                    result=self.decode_content(obj, res.get('result')))
         return self.meta_from_decoded(res)
 
+    def encode_result(self, result, state):
+        if state in self.EXCEPTION_STATES and isinstance(result, Exception):
+            result = self.prepare_exception(result)
+            if isinstance(result, dict) and 'exc_message' in result:
+                try:
+                    self._encode(result['exc_message'])
+                except Exception:
+                    if isinstance(result['exc_message'], (list, tuple)):
+                        result['exc_message'] = list(map(str, result['exc_message']))
+                    else:
+                        result['exc_message'] = str(result['exc_message'])
+            return result
+        else:
+            return self.prepare_value(result)
+
     def encode_content(self, data):
         content_type, content_encoding, content = self._encode(data)
         if content_encoding == 'binary':
