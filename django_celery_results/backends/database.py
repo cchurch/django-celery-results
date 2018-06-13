@@ -21,10 +21,14 @@ class DatabaseBackend(BaseDictBackend):
             'children': self.current_task_children(request),
         })
 
-        task = getattr(request, 'task', None) if request else None
-        task_name = getattr(task, 'name', None)
-        task_args = getattr(request, 'args', None) if request else None
-        task_kwargs = getattr(request, 'kwargs', None) if request else None
+        # Handle "revoked" tasks that get a slightly different request object.
+        if hasattr(request, '_payload'):
+            task_args, task_kwargs, _ = request._payload
+            task_name = request.task.name
+        else:
+            task_name = getattr(request, 'task', None) if request else None
+            task_args = getattr(request, 'args', None) if request else None
+            task_kwargs = getattr(request, 'kwargs', None) if request else None
 
         self.TaskModel._default_manager.store_result(
             content_type, content_encoding,
